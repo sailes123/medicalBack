@@ -1,0 +1,121 @@
+CREATE TABLE auth (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    user_type VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE profile (
+    profile_id INT AUTO_INCREMENT PRIMARY KEY,
+    auth_id INT NOT NULL,
+    profileUrl TEXT NOT NULL,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    user_type VARCHAR(255) NOT NULL,
+    gender VARCHAR(255) NOT NULL,
+    age INT NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    dieseses VARCHAR(255),
+    speciality VARCHAR(255),
+    doctor_type ENUM('Patient', 'Specialist', 'Physician') NOT NULL DEFAULT 'Patient',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    FOREIGN KEY (auth_id) REFERENCES auth(user_id)
+);
+
+CREATE TABLE schedules (
+    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id INT NOT NULL,
+    available_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status ENUM('Available', 'Booked', 'Blocked') NOT NULL DEFAULT 'Available',
+    patient_id INT,
+    CONSTRAINT fk_doctor FOREIGN KEY (doctor_id) REFERENCES profile(profile_id),
+    CONSTRAINT fk_patient FOREIGN KEY (patient_id) REFERENCES profile(profile_id)
+);
+
+CREATE TABLE payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    token VARCHAR(60),
+    amount DECIMAL(10, 2) NOT NULL,
+    specialist_call BOOLEAN NOT NULL DEFAULT 1,
+    physician_call BOOLEAN NOT NULL DEFAULT 1,
+    CONSTRAINT fk_patient_payments FOREIGN KEY (patient_id) REFERENCES profile(profile_id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE doctor_patient (
+    doctor_patient_id INT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id INT NOT NULL,
+    patient_id INT NOT NULL,
+    CONSTRAINT dp_doctor FOREIGN KEY (doctor_id) REFERENCES profile(profile_id),
+    CONSTRAINT dp_patient FOREIGN KEY (patient_id) REFERENCES profile(profile_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE lab (
+    LabID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255),
+    Location VARCHAR(255),
+    PhoneNumber VARCHAR(255),
+    OpeningHours VARCHAR(255)
+);
+
+CREATE TABLE test (
+    TestID INT AUTO_INCREMENT PRIMARY KEY,
+    LabID INT,
+    TestName VARCHAR(255),
+    TestPrice VARCHAR(255),
+    Description TEXT,
+    FOREIGN KEY (LabID) REFERENCES Lab(LabID)
+);
+
+CREATE TABLE prescription (
+    doctor_id INT NOT NULL,
+    patient_id INT NOT NULL,
+    CONSTRAINT pres_doctor FOREIGN KEY (doctor_id) REFERENCES profile(profile_id),
+    CONSTRAINT pres_patient FOREIGN KEY (patient_id) REFERENCES profile(profile_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE Tests (
+    TestID INT AUTO_INCREMENT,
+    Description TEXT,
+    ResultTiming VARCHAR(255),
+    PRIMARY KEY (TestID)
+);
+
+CREATE TABLE TestProcedure (
+    ProcedureID INT AUTO_INCREMENT,
+    TestID INT,
+    HowIsTestDone TEXT,
+    Preparation TEXT,
+    FOREIGN KEY (TestID) REFERENCES Tests(TestID),
+    PRIMARY KEY (ProcedureID)
+);
+
+CREATE TABLE ResultsInterpretation (
+    InterpretationID INT AUTO_INCREMENT,
+    TestID INT,
+    TestCondition VARCHAR(255),
+    FastingBloodSugar VARCHAR(255),
+    PostprandialBloodSugar VARCHAR(255),
+    FOREIGN KEY (TestID) REFERENCES Tests(TestID),
+    PRIMARY KEY (InterpretationID)
+);
+
+
+CREATE TABLE PreventionAndCure (
+    PACID INT AUTO_INCREMENT,
+    TestID INT,
+    Prevention TEXT,
+    Cure TEXT,
+    FOREIGN KEY (TestID) REFERENCES Tests(TestID),
+    PRIMARY KEY (PACID)
+);
